@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Nyári szünet visszaszámláló</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(-45deg, #d0ff00, #ffffff, #101d24, #b1e638);
+      background-size: 400% 400%;
+      animation: gradientMove 15s ease infinite;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #03045e;
+      overflow: hidden;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+      animation: fadeIn 1s ease;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+    }
+
+    .countdown {
+      font-size: 2em;
+      margin-bottom: 20px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .live-time {
+      font-size: 1em;
+      color: #555;
+    }
+
+    #celebrate {
+      font-size: 1.5em;
+      color: #007f5f;
+      margin-top: 20px;
+      display: none;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⏳ Visszaszámláló a nyári szünetig</h1>
+    <div class="countdown" id="countdown">Számolás...</div>
+    <div class="live-time" id="liveTime">Aktuális idő: ...</div>
+    <div id="celebrate">🎉 Itt a nyári szünet! 🎉</div>
+  </div>
+
+  <canvas id="confettiCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+
+  <script>
+    const countdownElement = document.getElementById("countdown");
+    const liveTimeElement = document.getElementById("liveTime");
+    const celebrateElement = document.getElementById("celebrate");
+
+    const canvas = document.getElementById("confettiCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let confetti = [];
+    const colors = ['#f94144', '#f3722c', '#f8961e', '#90be6d', '#43aa8b', '#577590'];
+
+    function createConfetti() {
+      for (let i = 0; i < 150; i++) {
+        confetti.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 2,
+          c: colors[Math.floor(Math.random() * colors.length)],
+          d: Math.random() * 4 + 2
+        });
+      }
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetti.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.c;
+        ctx.fill();
+        p.y += p.d;
+        if (p.y > canvas.height) p.y = -10;
+      });
+      requestAnimationFrame(drawConfetti);
+    }
+
+    function updateCountdown() {
+      const targetDate = new Date("2025-06-15T00:00:00");
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        countdownElement.textContent = "🎉 Már nyári szünet van!";
+        celebrateElement.style.display = "block";
+        createConfetti();
+        drawConfetti();
+        clearInterval(timer);
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      countdownElement.textContent = `${days} nap, ${hours} óra, ${minutes} perc, ${seconds} másodperc`;
+    }
+
+    function updateLiveTime() {
+      const now = new Date();
+      liveTimeElement.textContent = `Aktuális idő: ${now.toLocaleTimeString("hu-HU")}`;
+    }
+
+    const timer = setInterval(() => {
+      updateCountdown();
+      updateLiveTime();
+    }, 1000);
+
+    updateCountdown();
+    updateLiveTime();
+  </script>
+</body>
+</html>
